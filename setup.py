@@ -19,7 +19,6 @@ setup(
     description='A python package that can fast random access any lines in a large file without high memory cost.',
     author='Ching Kit Wong',
     author_email='270018958@qq.com',
-    long_description=read("README.rst"),
     url='https://github.com/Yelrose/linecache_light',
     keywords=['linecache', 'random access'],
     long_description=long_description,
