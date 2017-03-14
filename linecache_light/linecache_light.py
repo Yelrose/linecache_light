@@ -1,4 +1,5 @@
 import cPickle as pkl
+from collections import Iterable
 import os
 
 
@@ -14,6 +15,7 @@ class LineCache(object):
         num_lines = len(linecache)
         line_0 = linecache[0]
         line_100 = linecache[100]
+
     '''
     def __init__(self, filename, cache_suffix='.cache'):
         self.filename = filename
@@ -28,15 +30,21 @@ class LineCache(object):
                     line = f.readline()
                     if not line: break
                     self.line_seek.append(seek_pos)
-                pkl.dump(self.line_seek, open(self.filename + cache_suffix),'wb')
+                pkl.dump(self.line_seek, open(self.filename + cache_suffix, 'wb'))
                 self.num_lines = len(self.line_seek)
 
     def __getitem__(self, line_no):
-        assert (line_no < self.num_lines and line_no >= 0), "Out of index: line_no:%s  num_lines: %s" % (line_no, self.num_lines)
-        fhandle = open(self.filename, 'rb')
-        fhandle.seek(self.line_seek[line_no])
-        line = fhandle.readline()
-        return line
+        if isinstance(line_no, slice):
+            return [self[ii] for ii in xrange(*line_no.indices(len(self)))]
+        elif isinstance(line_no, Iterable):
+            return [self[ii] for ii in line_no]
+        else:
+            if line_no >= self.num_lines:
+                raise IndexError, "Out of index: line_no:%s  num_lines: %s" % (line_no, self.num_lines)
+            fhandle = open(self.filename, 'rb')
+            fhandle.seek(self.line_seek[line_no])
+            line = fhandle.readline()
+            return line
 
     def __len__(self):
         return self.num_lines
