@@ -25,7 +25,7 @@ long_description='''
 setup(
     name='linecache-light',
     packages=['linecache_light'],
-    version = '0.1.2',
+    version = '0.1.3',
     description='A python package that can fast random access any lines in a large file without high memory cost.',
     author='Ching Kit Wong',
     author_email='270018958@qq.com',
