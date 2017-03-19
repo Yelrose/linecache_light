@@ -50,7 +50,7 @@ class LineCache(object):
             return [self[ii] for ii in line_no]
         else:
             if line_no >= self.num_lines:
-                raise IndexError, "Out of index: line_no:%s  num_lines: %s" % (line_no, self.num_lines)
+                raise IndexError("Out of index: line_no:%s  num_lines: %s" % (line_no, self.num_lines))
             fhandle = open(self.filename, 'rb')
             fhandle.seek(self.line_seek[line_no])
             line = fhandle.readline()
