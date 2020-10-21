@@ -22,12 +22,18 @@ long_description='''
         line_indexing = linecache[-1]
 '''
 
+workdir = os.path.dirname(os.path.abspath(__file__))
+with open(os.path.join(workdir, './requirements.txt')) as f:
+    requirements = f.read().splitlines()
+
 setup(
     name='linecache-light',
     packages=['linecache_light'],
-    version = '0.1.3',
+    version = '0.1.4',
     description='A python package that can fast random access any lines in a large file without high memory cost.',
     author='Ching Kit Wong',
+    install_requires=requirements,
+    setup_requires=requirements,
     author_email='270018958@qq.com',
     url='https://github.com/Yelrose/linecache_light',
     keywords=['linecache', 'random access'],
