@@ -1,7 +1,16 @@
-import cPickle as pkl
+import pickle as pkl
 from collections import Iterable
 import os
+import logging
+import io
+import numpy as np
 
+try:
+    xrange
+except NameError:  # python3
+    xrange = range
+
+logger = logging.getLogger('LineCache')
 
 class LineCache(object):
     '''
@@ -17,29 +26,30 @@ class LineCache(object):
         line_100 = linecache[100]
 
     '''
-    def __init__(self, filename, cache_suffix='.cache'):
+    def __init__(self, filename, cache_suffix='.cache.npy', encoding="utf-8"):
         self.filename = filename
+        self.encoding = encoding
         if os.path.exists(self.filename + cache_suffix):
-            self.st_mtime,  self.line_seek = pkl.load(open(self.filename + cache_suffix, 'rb'))
+            self.line_seek = np.load(self.filename + cache_suffix, mmap_mode="r")
             self.num_lines = len(self.line_seek)
-            if self.st_mtime != os.stat(self.filename).st_mtime:
-                print('The cache file is out-of-date')
-                self.build_seek_index(cache_suffix)
         else:
-            self.build_seek_index(cache_suffix)
+            self._build_seek_index(cache_suffix)
 
-    def build_seek_index(self, cache_suffix):
-        print("Caching lines informaiton to %s" % (self.filename + cache_suffix))
-        statinfo = os.stat(self.filename)
-        self.st_mtime = statinfo.st_mtime
-        with open(self.filename, 'rb') as f:
+
+    def _build_seek_index(self, cache_suffix):
+        logger.info("Caching lines informaiton to %s" % (self.filename + cache_suffix))
+        with io.open(self.filename, 'r', encoding=self.encoding, errors="ignore") as f:
             self.line_seek = []
             while True:
                 seek_pos = f.tell()
                 line = f.readline()
-                if not line: break
+                if not line:
+                    break
                 self.line_seek.append(seek_pos)
-            pkl.dump((self.st_mtime, self.line_seek), open(self.filename + cache_suffix, 'wb'))
+            self.line_seek = np.array(self.line_seek)
+            np.save(self.filename + cache_suffix, self.line_seek)
+            # Reload
+            self.line_seek = np.load(self.filename + cache_suffix, mmap_mode="r")
             self.num_lines = len(self.line_seek)
 
 
@@ -51,9 +61,9 @@ class LineCache(object):
         else:
             if line_no >= self.num_lines:
                 raise IndexError("Out of index: line_no:%s  num_lines: %s" % (line_no, self.num_lines))
-            fhandle = open(self.filename, 'rb')
-            fhandle.seek(self.line_seek[line_no])
-            line = fhandle.readline()
+            with io.open(self.filename, 'r', encoding=self.encoding, errors="ignore") as fhandle:
+                fhandle.seek(self.line_seek[line_no])
+                line = fhandle.readline()
             return line
 
     def __len__(self):
