@@ -1,4 +1,5 @@
 from os import path
+import os
 from setuptools import setup
 
 long_description='''
